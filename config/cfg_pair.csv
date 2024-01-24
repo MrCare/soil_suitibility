@@ -1,0 +1,8 @@
+name,inner_name,value_type,sub_table,deal_func_name,remark
+PD,PD,0,cfg_pair_sub_PD,PD,坡度
+TCHD,TCHD,1,,TCHD,土层厚度
+DBLSFD,DBLSFD,0,cfg_pair_sub_DBLSFD,DBLSFD,地表砾石丰度
+TRZD,TRZD,0,cfg_pair_sub_TRZD,TRZD,土壤质地
+SZYTJ,SZYTJ,0,cfg_pair_sub_SZYTJ,SZYTJ,水资源条件
+PSNL,PSNL,0,cfg_pair_sub_PSNL,PSNL,排水能力
+TRZJSWR,TRZJSWR,0,cfg_pair_sub_TRZJSWR,TRZJSWR,土壤重金属污染
