@@ -8,6 +8,7 @@ import geopandas as gpd
 import os
 import fire
 import warnings
+
 # from dbfread import DBF
 # import dbf
 
@@ -15,7 +16,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # 指定包含 CSV 文件的文件夹路径
-folder_path = os.path.join('.', 'config')
+folder_path = os.path.join(os.path.dirname(__file__), 'config')
 
 # 初始化
 # 初始化一个空字典，用于存储读取的 CSV 数据
