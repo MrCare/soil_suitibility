@@ -33,6 +33,12 @@ cfg_pair = csv_data['cfg_pair']
 cfg_level = csv_data['cfg_level']
 cfg_level_suitibility = csv_data['cfg_level_suitibility']
 cfg_level_sub_level = csv_data['cfg_level_sub_level']
+# 将行列标签都转为字符串
+cfg_level.columns = cfg_level.columns.astype(str)
+cfg_level.index = cfg_level.index.astype(str)
+# 将列标签都转为字符串, 将所有值都转为字符串, 便于测试
+cfg_level_suitibility.columns = cfg_level_suitibility.columns.astype(str)
+cfg_level_sub_level = cfg_level_sub_level.astype(str)
 cfg_index = csv_data['cfg_index'].index.tolist()
 # print(cfg_index)
 
@@ -66,20 +72,21 @@ def calc_level(row):
     '''
     计算最高限制因素的等级与其个数，查表计算适宜类等级
     '''
+
     max_level = 0
     max_level_num = 0
     result = None
     for index in cfg_index:
-        if row[index + '_new'] > max_level: max_level += 1
+        if row[index + '_new'] > max_level: max_level = row[index + '_new']
     for index in cfg_index:
         if row[index + '_new'] == max_level: max_level_num += 1
     if max_level <= 2:
         result = 0
     elif max_level > 2 and max_level <= 5:
         if max_level_num > 4:
-            result = cfg_level.loc[str(max_level)]['>4']
+            result = cfg_level.loc[str(max_level), '>4']
         else:
-            result = cfg_level.loc[max_level][max_level_num]
+            result = cfg_level.loc[str(max_level), str(max_level_num)]
     return result
 
 def calc_sub_level(row):
@@ -91,44 +98,45 @@ def calc_sub_level(row):
             if cell_value == value:
                 return column_name
         return None
-
-    sub_level_name = cfg_level_suitibility.loc['suitibility'][row['suitibility_level']]
+    sub_level_name = cfg_level_suitibility.loc['suitibility'][str(row['suiti_level'])]
     num_over_three = 0
     result = None
 
     for index in cfg_index:
-        if row[index + '_new'] > 3: num_over_three += 1
+        if row[index + '_new'] >= 3: num_over_three += 1
     if sub_level_name == "宜耕":
         result_range = cfg_level_sub_level.loc['宜耕']
-        result = find_column_name(result_range, num_over_three)
+        result = find_column_name(result_range, str(num_over_three))
     elif sub_level_name == "宜园":
         result_range = cfg_level_sub_level.loc['宜园']
         if num_over_three >= 3:
             result = find_column_name(result_range, ">=3")           
         else:
-            result = find_column_name(result_range, num_over_three) 
+            result = find_column_name(result_range, str(num_over_three)) 
     elif sub_level_name == "宜林":
         result_range = cfg_level_sub_level.loc['宜林']
         if num_over_three >= 3:
             result = find_column_name(result_range, ">=3")
         else:
-            result = find_column_name(result_range, num_over_three)
+            result = find_column_name(result_range, str(num_over_three))
     elif sub_level_name == "宜草":
         result_range = cfg_level_sub_level.loc['宜草']
         if num_over_three >= 4:
             result = find_column_name(result_range, ">=4")
         else:
-            result = find_column_name(result_range, num_over_three)        
+            result = find_column_name(result_range, str(num_over_three))
     else:
         result = None
-    return result
+    return [sub_level_name, result]
 
 def calc_level_all(df):
-    df['suitibility_level'] = df.apply(calc_level, axis=1)
+    df['suiti_level'] = df.apply(calc_level, axis=1)
     return df
 
 def calc_sub_level_all(df):
-    df['suitibility_sub_level'] = df.apply(calc_sub_level, axis=1)
+    retrun_df = df.apply(calc_sub_level, axis=1, result_type='expand')
+    df['suiti_name'] = retrun_df[0]
+    df['suiti_sub_level'] = retrun_df[1]
     return df
 
 def read_data(file_pth, option_type="csv"):
@@ -164,7 +172,7 @@ def save_data(file, file_pth, option_type="csv"):
     else:
         the_file = file.to_csv(file_pth, index=False)
 
-def main(file_pth, out_file_pth=None):
+def main(file_pth, option_type="shp", out_file_pth=None):
     """
     Greet a person by name.
 
@@ -178,21 +186,27 @@ def main(file_pth, out_file_pth=None):
         To greet someone named Alice, run:
         $ python my_script.py greet Alice
     """
-    the_file = read_data(file_pth, "shp")
+    if option_type == "shp":
+        the_file = read_data(file_pth, "shp")
+    if option_type == "csv":
+        the_file = read_data(file_pth, "csv")
     the_file = pair_all(the_file)
     the_file = calc_level_all(the_file)
     the_file = calc_sub_level_all(the_file)
     # 指定要保存文件的路径
     if not out_file_pth:
-        output_file_path_csv = os.path.join(os.path.dirname(file_pth), 'result.csv')
-        new_folder = os.path.join(os.path.dirname(file_pth), 'suiti_result')
-        os.makedirs(new_folder)
-        output_file_path_shp = os.path.join(new_folder, 'suiti_result.shp')
-        out_file_pth = output_file_path_shp
+        if option_type == "shp":
+            new_folder = os.path.join(os.path.dirname(file_pth), 'suiti_result')
+            os.makedirs(new_folder)
+            output_file_path_shp = os.path.join(new_folder, 'suiti_result.shp')
+            out_file_pth = output_file_path_shp
+        if option_type == "csv":
+            output_file_path_csv = os.path.join(os.path.dirname(file_pth), 'result.csv')
+            out_file_pth = output_file_path_csv
     # 保存处理后的数据到新文件
-    save_data(the_file, out_file_pth, option_type="shp")
+    save_data(the_file, out_file_pth, option_type=option_type)
     return the_file
 
 if __name__ == "__main__":
-    # main('./test.csv')
-    fire.Fire(main)
+    main('./test_data/测试问题数据.csv', 'csv')
+    # fire.Fire(main)
