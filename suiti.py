@@ -8,6 +8,7 @@ import geopandas as gpd
 import os
 import fire
 import warnings
+from alive_progress import alive_bar
 
 # from dbfread import DBF
 # import dbf
@@ -174,39 +175,38 @@ def save_data(file, file_pth, option_type="csv"):
 
 def main(file_pth, option_type="shp", out_file_pth=None):
     """
-    Greet a person by name.
-
-    Args:
-        name (str): The name of the person to greet.
-
-    Returns:
-        str: A greeting message.
-
-    Example:
-        To greet someone named Alice, run:
-        $ python my_script.py greet Alice
+    option_type 默认为shp，可选为csv
+    out_file_pth 默认为输入文件同名目录下，文件名为 suiti_result.shp
     """
-    if option_type == "shp":
-        the_file = read_data(file_pth, "shp")
-    if option_type == "csv":
-        the_file = read_data(file_pth, "csv")
-    the_file = pair_all(the_file)
-    the_file = calc_level_all(the_file)
-    the_file = calc_sub_level_all(the_file)
-    # 指定要保存文件的路径
-    if not out_file_pth:
+    
+    total_steps = 3  # 总共需要执行的函数数量
+    with alive_bar(total_steps) as bar:  # 初始化进度条
         if option_type == "shp":
-            new_folder = os.path.join(os.path.dirname(file_pth), 'suiti_result')
-            os.makedirs(new_folder)
-            output_file_path_shp = os.path.join(new_folder, 'suiti_result.shp')
-            out_file_pth = output_file_path_shp
+            the_file = read_data(file_pth, "shp")
         if option_type == "csv":
-            output_file_path_csv = os.path.join(os.path.dirname(file_pth), 'result.csv')
-            out_file_pth = output_file_path_csv
-    # 保存处理后的数据到新文件
-    save_data(the_file, out_file_pth, option_type=option_type)
-    return the_file
+            the_file = read_data(file_pth, "csv")
+        the_file = pair_all(the_file)
+        the_file = calc_level_all(the_file)
+        the_file = calc_sub_level_all(the_file)
+        bar()
+        
+        # 指定要保存文件的路径
+        if not out_file_pth:
+            if option_type == "shp":
+                new_folder = os.path.join(os.path.dirname(file_pth), 'suiti_result')
+                os.makedirs(new_folder)
+                output_file_path_shp = os.path.join(new_folder, 'suiti_result.shp')
+                out_file_pth = output_file_path_shp
+            if option_type == "csv":
+                output_file_path_csv = os.path.join(os.path.dirname(file_pth), 'suiti_result.csv')
+                out_file_pth = output_file_path_csv
+        bar()
+        
+        # 保存处理后的数据到新文件
+        save_data(the_file, out_file_pth, option_type=option_type)
+        bar()
+    return 'done!'
 
 if __name__ == "__main__":
-    main('./test_data/测试问题数据.csv', 'csv')
-    # fire.Fire(main)
+    # main('./test_data/测试问题数据.csv', 'csv')
+    fire.Fire(main)
