@@ -10,9 +10,6 @@ import fire
 import warnings
 from alive_progress import alive_bar
 
-# from dbfread import DBF
-# import dbf
-
 # 忽略 FutureWarning
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -49,20 +46,22 @@ def pair_origin_to_target(origin_value, origin_name):
     '''
     try:
         cfg = cfg_pair.loc[origin_name]
-        inner_name = cfg['inner_name']
-        value_type = cfg['value_type']
         sub_table = cfg['sub_table']
         deal_func_name = cfg['deal_func_name']
-        if value_type == 0:
-            origin_sub_value = csv_data[sub_table].loc[origin_value]['inner_name']
-            result_value = globals()[deal_func_name](origin_sub_value)
-        elif value_type == 1:
-            result_value = globals()[deal_func_name](origin_value)
+        
+        rule_strs = csv_data[sub_table]
+        result_value = globals()[deal_func_name](origin_value, rule_strs)
+        # if value_type == 0:
+        #     origin_sub_value = csv_data[sub_table].loc[origin_value]['inner_name']
+        #     result_value = globals()[deal_func_name](origin_sub_value)
+        # elif value_type == 1:
+        #     result_value = globals()[deal_func_name](origin_value)
         return result_value
 
-    except KeyError:
-        print(f"{origin_name} 或 {origin_value} 缺少 '{KeyError}' 相关配置")
-        return None
+    except KeyError as e:
+        raise KeyError(f"{origin_name} 或 {origin_value} 缺少 '{str(e)}' 相关配置")
+    except TypeError as e:
+        raise TypeError('检查', origin_name, str(e))
 
 def pair_all(df):
     for index in cfg_index:
@@ -141,10 +140,6 @@ def calc_sub_level_all(df):
     return df
 
 def read_data(file_pth, option_type="csv"):
-    # if option_type == "dbf":
-    #     table = DBF(file_pth, encoding='utf-8')
-    #     the_file = pd.DataFrame(iter(table))
-    # el
     if option_type == "shp":
         the_file = gpd.read_file(file_pth)
     else:
@@ -152,23 +147,7 @@ def read_data(file_pth, option_type="csv"):
     return the_file
 
 def save_data(file, file_pth, option_type="csv"):
-    if option_type == "dbf":
-        db = dbf.Table(file_pth, 'w+')
-        # 根据 DataFrame 的列来定义 DBF 表的字段
-        for column_name, data_type in zip(file.columns, file.dtypes):
-            if 'int' in str(data_type):
-                db.addField((column_name, 'N', 10, 0))  # 整数类型
-            elif 'float' in str(data_type):
-                db.addField((column_name, 'N', 10, 2))  # 浮点数类型
-            elif 'object' in str(data_type):
-                db.addField((column_name, 'C', 50))  # 字符串类型
-        data = file.to_dict(orient='records')
-        # 将数据写入 DBF 文件
-        for row_data in data:
-            db.append(row_data)
-        # 关闭 DBF 文件
-        db.close()
-    elif option_type == 'shp':
+    if option_type == 'shp':
         the_file = file.to_file(file_pth, driver='ESRI Shapefile', encoding='utf-8')
     else:
         the_file = file.to_csv(file_pth, index=False)
@@ -185,11 +164,11 @@ def main(file_pth, option_type="shp", out_file_pth=None):
             the_file = read_data(file_pth, "shp")
         if option_type == "csv":
             the_file = read_data(file_pth, "csv")
+        bar()
+        
         the_file = pair_all(the_file)
         the_file = calc_level_all(the_file)
         the_file = calc_sub_level_all(the_file)
-        bar()
-        
         # 指定要保存文件的路径
         if not out_file_pth:
             if option_type == "shp":
@@ -208,5 +187,5 @@ def main(file_pth, option_type="shp", out_file_pth=None):
     return 'done!'
 
 if __name__ == "__main__":
-    # main('./test_data/测试问题数据.csv', 'csv')
+    # main('./test_data/适宜性评价结果.shp', 'shp')
     fire.Fire(main)

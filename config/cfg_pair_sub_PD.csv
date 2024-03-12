@@ -1,7 +1,6 @@
 name,inner_name
-I,0
-II,1
-III,2
-IV,3
-V,4
-VI,5
+"x < 2",0
+"(x >= 2) and (x < 6)",1
+"(x >= 6) and (x < 15)",2
+"(x >= 15) and (x < 25)",3
+"x >= 25",4
