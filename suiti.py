@@ -89,6 +89,14 @@ def calc_level(row):
             result = cfg_level.loc[str(max_level), str(max_level_num)]
     return result
 
+def get_max_limit_str(row):
+    index_names = [each+'_new' for each in cfg_index]
+    index_alias = [cfg_pair.loc[each]['alias'] for each in cfg_index]
+    index_values = row[index_names]
+    max_value = max(index_values)
+    max_names_string = ','.join([index_alias[i] for i, v in enumerate(index_values) if v == max_value])
+    return max_names_string
+
 def calc_sub_level(row):
     '''
     根据适宜类等级，划分适宜类子等级，高度适宜，中度适宜，勉强适宜等
@@ -98,7 +106,7 @@ def calc_sub_level(row):
             if cell_value == value:
                 return column_name
         return None
-    sub_level_name = cfg_level_suitibility.loc['suitibility'][str(row['suiti_level'])]
+    sub_level_name = cfg_level_suitibility.loc['suitibility'][str(row['s_level'])]
     num_over_three = 0
     result = None
 
@@ -127,16 +135,22 @@ def calc_sub_level(row):
             result = find_column_name(result_range, str(num_over_three))
     else:
         result = None
-    return [sub_level_name, result]
+
+    # 获取最大限制因素字符串
+    max_limit_str = ''
+    if result in ['II', 'III']:
+        max_limit_str = get_max_limit_str(row)
+    return [sub_level_name, result, max_limit_str]
 
 def calc_level_all(df):
-    df['suiti_level'] = df.apply(calc_level, axis=1)
+    df['s_level'] = df.apply(calc_level, axis=1)
     return df
 
 def calc_sub_level_all(df):
     retrun_df = df.apply(calc_sub_level, axis=1, result_type='expand')
-    df['suiti_name'] = retrun_df[0]
-    df['suiti_sub_level'] = retrun_df[1]
+    df['s_name'] = retrun_df[0]
+    df['s_s_level'] = retrun_df[1]
+    df['s_limit'] = retrun_df[2]
     return df
 
 def read_data(file_pth, option_type="csv"):
@@ -173,7 +187,8 @@ def main(file_pth, option_type="shp", out_file_pth=None):
         if not out_file_pth:
             if option_type == "shp":
                 new_folder = os.path.join(os.path.dirname(file_pth), 'suiti_result')
-                os.makedirs(new_folder)
+                if not os.path.exists(new_folder):
+                    os.makedirs(new_folder)
                 output_file_path_shp = os.path.join(new_folder, 'suiti_result.shp')
                 out_file_pth = output_file_path_shp
             if option_type == "csv":
@@ -187,5 +202,5 @@ def main(file_pth, option_type="shp", out_file_pth=None):
     return 'done!'
 
 if __name__ == "__main__":
-    # main('./test_data/适宜性评价结果.shp', 'shp')
-    fire.Fire(main)
+    main('./test_data/适宜性评价/适宜性评价.shp', 'shp')
+    # fire.Fire(main)
