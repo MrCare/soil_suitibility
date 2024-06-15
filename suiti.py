@@ -202,5 +202,5 @@ def main(file_pth, option_type="shp", out_file_pth=None):
     return 'done!'
 
 if __name__ == "__main__":
-    main('./test_data/适宜性评价/适宜性评价.shp', 'shp')
-    # fire.Fire(main)
+    # main('./test_data/适宜性评价.shp', 'shp')
+    fire.Fire(main)
