@@ -2,3 +2,4 @@ dist
 build
 suiti.spec
 test_data
+**/.DS_Store

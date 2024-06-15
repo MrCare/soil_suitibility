@@ -81,7 +81,7 @@ def calc_level(row):
     for index in cfg_index:
         if row[index + '_new'] == max_level: max_level_num += 1
     if max_level <= 2:
-        result = 0
+        result = 1 # 限制因子个数小于 2 的赋限制等级为一级
     elif max_level > 2 and max_level <= 5:
         if max_level_num > 4:
             result = cfg_level.loc[str(max_level), '>4']
