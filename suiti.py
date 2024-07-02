@@ -31,6 +31,7 @@ for filename in os.listdir(folder_path):
 cfg_pair = csv_data['cfg_pair']
 cfg_level = csv_data['cfg_level']
 cfg_level_name = csv_data['cfg_level_name']
+cfg_level_sub_name = csv_data['cfg_level_sub_name']
 cfg_level_suitibility = csv_data['cfg_level_suitibility']
 cfg_level_sub_level = csv_data['cfg_level_sub_level']
 # 将行列标签都转为字符串
@@ -138,12 +139,13 @@ def calc_sub_level(row):
             result = find_column_name(result_range, str(num_over_three))
     else:
         result = None
+    result_name = cfg_level_sub_name.loc[result]['out_name'] if result else None #获取 sub_level 表示出来的名称
 
     # 获取最大限制因素字符串
     max_limit_str = ''
     if result in ['II', 'III']:
         max_limit_str = get_max_limit_str(row)
-    return [sub_level_out_name, result, max_limit_str]
+    return [sub_level_out_name, result_name, max_limit_str]
 
 def calc_level_all(df):
     df['s_level'] = df.apply(calc_level, axis=1)
