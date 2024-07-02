@@ -1,0 +1,33 @@
+on 0: 2024-07-02 11:19:33,354 - ERROR - ./test_data/适宜性评价.csv: No such file or directory
+2024-07-02 11:19:33,355 - ERROR - FileNotFoundError: ./test_data/适宜性评价.csv: No such file or directory
+Traceback (most recent call last):
+  File "fiona/_shim.pyx", line 83, in fiona._shim.gdal_open_vector
+  File "fiona/_err.pyx", line 291, in fiona._err.exc_wrap_pointer
+fiona._err.CPLE_OpenFailedError: ./test_data/适宜性评价.csv: No such file or directory
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/car/Project/soilCli/suitibility/inner/exception.py", line 36, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/car/Project/soilCli/suitibility/inner/exception.py", line 24, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/car/Project/soilCli/suitibility/inner/exception.py", line 47, in wrapper
+    func(*args, **kwargs)
+  File "/Users/car/Project/soilCli/suitibility/suiti.py", line 184, in main
+    the_file = read_data(file_pth, "shp")
+  File "/Users/car/Project/soilCli/suitibility/suiti.py", line 161, in read_data
+    the_file = gpd.read_file(file_pth)
+  File "/Users/car/opt/anaconda3/envs/soilCli/lib/python3.9/site-packages/geopandas/io/file.py", line 259, in _read_file
+    return _read_file_fiona(
+  File "/Users/car/opt/anaconda3/envs/soilCli/lib/python3.9/site-packages/geopandas/io/file.py", line 303, in _read_file_fiona
+    with reader(path_or_bytes, **kwargs) as features:
+  File "/Users/car/opt/anaconda3/envs/soilCli/lib/python3.9/site-packages/fiona/env.py", line 408, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/car/opt/anaconda3/envs/soilCli/lib/python3.9/site-packages/fiona/__init__.py", line 264, in open
+    c = Collection(path, mode, driver=driver, encoding=encoding,
+  File "/Users/car/opt/anaconda3/envs/soilCli/lib/python3.9/site-packages/fiona/collection.py", line 162, in __init__
+    self.session.start(self, **kwargs)
+  File "fiona/ogrext.pyx", line 540, in fiona.ogrext.Session.start
+  File "fiona/_shim.pyx", line 90, in fiona._shim.gdal_open_vector
+fiona.errors.DriverError: ./test_data/适宜性评价.csv: No such file or directory

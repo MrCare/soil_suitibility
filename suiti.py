@@ -3,6 +3,7 @@ Author: Mr.Car
 Date: 2024-01-07 17:34:41
 '''
 from inner import *
+from inner.exception import *
 import pandas as pd
 import geopandas as gpd
 import os
@@ -29,6 +30,7 @@ for filename in os.listdir(folder_path):
 
 cfg_pair = csv_data['cfg_pair']
 cfg_level = csv_data['cfg_level']
+cfg_level_name = csv_data['cfg_level_name']
 cfg_level_suitibility = csv_data['cfg_level_suitibility']
 cfg_level_sub_level = csv_data['cfg_level_sub_level']
 # 将行列标签都转为字符串
@@ -107,6 +109,7 @@ def calc_sub_level(row):
                 return column_name
         return None
     sub_level_name = cfg_level_suitibility.loc['suitibility'][str(row['s_level'])]
+    sub_level_out_name = cfg_level_name.loc[sub_level_name]['out_name']
     num_over_three = 0
     result = None
 
@@ -140,7 +143,7 @@ def calc_sub_level(row):
     max_limit_str = ''
     if result in ['II', 'III']:
         max_limit_str = get_max_limit_str(row)
-    return [sub_level_name, result, max_limit_str]
+    return [sub_level_out_name, result, max_limit_str]
 
 def calc_level_all(df):
     df['s_level'] = df.apply(calc_level, axis=1)
@@ -166,6 +169,9 @@ def save_data(file, file_pth, option_type="csv"):
     else:
         the_file = file.to_csv(file_pth, index=False)
 
+@catch_file_not_found_error
+@catch_key_error
+@add_attention
 def main(file_pth, option_type="shp", out_file_pth=None):
     """
     option_type 默认为shp，可选为csv
@@ -203,4 +209,5 @@ def main(file_pth, option_type="shp", out_file_pth=None):
 
 if __name__ == "__main__":
     # main('./test_data/适宜性评价.shp', 'shp')
+    # python suiti.py ./test_data/适宜性评价.shp
     fire.Fire(main)
